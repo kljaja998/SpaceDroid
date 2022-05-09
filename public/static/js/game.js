@@ -21,7 +21,7 @@ let distance = 5;
 let player_size = 15;
 let wall_size = 40;
 let outline_thickness = 3;
-let direction = "LEFT"
+let isGoingLeft = true;
 
 function initialize_walls(){
     let walls = [];
@@ -81,27 +81,6 @@ scene("game", () => {
         outline(outline_thickness),
     ])
 
-    /*let slashLeft = add([
-        pos(player.pos.x - 5, player.pos.y - 5),
-        rect(80, 30),
-        origin("botright"),
-        color(255, 255, 0),
-        opacity(1)
-    ])*/
-
-    /*slashLeft.onUpdate(() =>{
-        slashLeft.pos = player.pos
-        if(slashLeft.opacity > 0){
-            //console.log("Hiii")
-            slashLeft.opacity -= 0.035
-        }
-        else{
-
-            destroy(slashLeft)
-        }
-
-    })*/
-
     player.onUpdate(() => {
         camPos(player.pos)
 
@@ -128,14 +107,14 @@ scene("game", () => {
         let orig1;
         let orig2;
 
-        if (direction !== "LEFT") {
-            sign = 1;
-            orig1 = "botright";
-            orig2 = "topleft";
-        } else {
+        if (isGoingLeft) {
             sign = -1;
-            orig1 = "botleft"
-            orig2 = "topright"
+            orig1 = "topleft";
+            orig2 = "botright";
+        } else {
+            sign = 1;
+            orig1 = "topright"
+            orig2 = "botleft"
         }
 
         let slash = add([
@@ -197,7 +176,7 @@ scene("game", () => {
         }
     })
     onKeyDown("a", () => {
-        direction = "LEFT";
+        isGoingLeft = true;
         if(player.pos.x > player_size + wall_size){
             if(isKeyDown("w") || isKeyDown("s")){
                 player.moveBy(-distance/Math.sqrt(2), 0)
@@ -216,7 +195,7 @@ scene("game", () => {
         }
     })
     onKeyDown("d", () => {
-        direction = "RIGHT";
+        isGoingLeft = false;
         if (player.pos.x < wall_size * (grid_size - 1) - outline_thickness - player_size){
             if(isKeyDown("w") || isKeyDown("s")){
                 player.moveBy(distance/Math.sqrt(2), 0)
