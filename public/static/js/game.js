@@ -137,21 +137,22 @@ scene("game", () => {
             orig1 = "botleft"
             orig2 = "topright"
         }
-        let slashLeft = add([
+
+        let slash = add([
             pos(player.pos.x + 5 * sign, player.pos.y + 5 * sign),
             rect(100, 50),
             origin(orig1),
             color(255, 255, 0),
             opacity(1)
         ])
-        slashLeft.onUpdate(() => {
-            slashLeft.pos = player.pos
-            if (slashLeft.opacity > 0) {
+        slash.onUpdate(() => {
+            slash.pos = player.pos
+            if (slash.opacity > 0) {
                 //console.log("Hiii")
-                slashLeft.opacity -= 0.035
+                slash.opacity -= 0.035
             }
             else {
-                destroy(slashLeft)
+                destroy(slash)
 
                 let slashRight = add([
                     pos(player.pos.x - 5 * sign, player.pos.y - 5 * sign),
