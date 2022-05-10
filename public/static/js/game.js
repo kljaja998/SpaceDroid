@@ -207,6 +207,8 @@ scene("game", () => {
 
     //////////////////////// Enemy
 
+    let enemy_speed=70;
+
     function randPos(){
         return (vec2(rand(wall_size+player_size,(grid_size-1) * wall_size-player_size), rand(wall_size+player_size,(grid_size-1) * wall_size-player_size)));
     }
@@ -230,11 +232,12 @@ scene("game", () => {
             origin("center"),
             area(),
             outline(outline_thickness),
-            move(player.pos.angle(position),40)
+            //move(player.pos.angle(position),40),
         ])
-        /* onUpdate(() => {
-          enemy.move(player.pos.angle(enemy.pos), 40)
-        }) */
+        onUpdate(()=>{
+            let vector=vec2(player.pos.x-enemy.pos.x, player.pos.y-enemy.pos.y)
+            enemy.moveBy(vec2(vector.x/vector.len(), vector.y/vector.len()).scale(dt()*enemy_speed))
+        })
     })
 })
 
