@@ -78,7 +78,7 @@ scene("game", () => {
         color(3, 165, 252),
         origin("center"),
         area(),
-        outline(outline_thickness),
+        outline(outline_thickness)
     ])
 
     player.onUpdate(() => {
@@ -204,6 +204,44 @@ scene("game", () => {
             }
         }
     })
+
+    //////////////////////// Enemy
+
+    function randPos(){
+        return (vec2(rand(wall_size+player_size,(grid_size-1) * wall_size-player_size), rand(wall_size+player_size,(grid_size-1) * wall_size-player_size)));
+    }
+
+    function randPosition(pos){
+        let enemy_position = randPos();
+        while (enemy_position.dist(pos)<player_size*2) enemy_position = randPos();
+        return enemy_position;
+    }
+
+    loop(2, () => {
+        let green=rand(90, 250);
+        let enemy_size=player_size+rand(player_size/2,player_size)
+        let position=randPosition(vec2(player.pos.x,player.pos.y))
+
+        let enemy = add([
+            health(100),
+            pos(position),
+            circle(enemy_size),
+            color(0, green, 0),
+            origin("center"),
+            area(),
+            outline(outline_thickness),
+            move(player.pos.angle(position),40)
+        ])
+        /* onUpdate(() => {
+          enemy.move(player.pos.angle(enemy.pos), 40)
+        }) */
+    })
 })
+
+
+
+
+
+
 
 go("game")
