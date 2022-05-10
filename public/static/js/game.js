@@ -207,7 +207,7 @@ scene("game", () => {
 
     //////////////////////// Enemy
 
-    let enemy_speed=70;
+    let enemy_speed=50;
 
     function randPos(){
         return (vec2(rand(wall_size+player_size,(grid_size-1) * wall_size-player_size), rand(wall_size+player_size,(grid_size-1) * wall_size-player_size)));
@@ -239,6 +239,68 @@ scene("game", () => {
             enemy.moveBy(vec2(vector.x/vector.len(), vector.y/vector.len()).scale(dt()*enemy_speed))
         })
     })
+
+    //// Shield u pokusaju
+
+    let shield_speed=150;
+
+    function makeShield(position){
+        let shield = add([
+            pos(position),
+            circle(player_size*0.75),
+            color(255,255,0),
+            origin("center"),
+            area(),
+            outline(outline_thickness),
+           // follow(player, vec2(1,1))
+        ])
+        onKeyDown("w", () => {
+            // Drze se dva dugmica - gore ide sqrt(2)/2 puta distance
+            if(player.pos.y > player_size + wall_size + outline_thickness){
+                if(isKeyDown("a") || isKeyDown("d")){
+                    shield.moveBy(0, -distance/Math.sqrt(2))
+                } else {
+                    shield.moveBy(0, -distance)
+                }
+            }
+        })
+        onKeyDown("a", () => {
+            isGoingLeft = true;
+            if(player.pos.x > player_size + wall_size){
+                if(isKeyDown("w") || isKeyDown("s")){
+                    shield.moveBy(-distance/Math.sqrt(2), 0)
+                } else {
+                    shield.moveBy(-distance, 0)
+                }
+            }
+        })
+        onKeyDown("s", () => {
+            if(player.pos.y <= wall_size * (grid_size - 1) - outline_thickness - player_size){
+                if(isKeyDown("a") || isKeyDown("d")){
+                    shield.moveBy(0, distance/Math.sqrt(2))
+                } else {
+                    shield.moveBy(0, distance)
+                }
+            }
+        })
+        onKeyDown("d", () => {
+            isGoingLeft = false;
+            if (player.pos.x < wall_size * (grid_size - 1) - outline_thickness - player_size){
+                if(isKeyDown("w") || isKeyDown("s")){
+                    shield.moveBy(distance/Math.sqrt(2), 0)
+                } else {
+                    shield.moveBy(distance, 0)
+                }
+            }
+        })
+        shield.onUpdate(()=>{
+           let vector=vec2(player.pos.x-shield.pos.x, player.pos.y-shield.pos.y)
+            shield.moveBy(vec2(vector.x/vector.len(), vector.y/vector.len()).normal().scale(shield_speed).scale(dt()))
+        })
+    }
+    makeShield(vec2(player.pos.x+player_size, player.pos.y+player_size))
+    makeShield(vec2(player.pos.x-player_size, player.pos.y-player_size))
+
 })
 
 
