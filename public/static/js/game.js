@@ -271,6 +271,20 @@ scene("game", () => {
             destroy(enemy)
             points++;
             txt_points.text = "Enemies defeated: " + points;
+            // Spawn effect
+            for(let i = 0; i < rand(3, 7); i++){
+                add([
+                    pos(enemy.pos),
+                    origin("center"),
+                    scale(rand(0.25, 1)),
+                    rect(20, 15),
+                    rotate(rand(0, 180)),
+                    lifespan(1, {fade: 0.5}),
+                    color(0, rand(90, 250), 0),
+                    area(),
+                    move(new Vec2(rand(-1, 1), rand(-1, 1)), 30),
+                ])
+            }
         })
 
         enemy.onCollide("slash", () =>{
@@ -280,6 +294,18 @@ scene("game", () => {
         enemy.onCollide("shield", ()=>{
             enemy.hurt(5)
             play("hit", {volume: 0.5})
+            for(let i = 0; i < rand(2, 5); i++){
+                add([
+                    pos(enemy.pos),
+                    origin("center"),
+                    scale(rand(0.25, 1)),
+                    rect(10, 10),
+                    rotate(rand(0, 180)),
+                    lifespan(2, {fade: 1}),
+                    area(),
+                    move(new Vec2(rand(-1, 1), rand(-1, 1)), 60),
+                ])
+            }
         })
     })
 
