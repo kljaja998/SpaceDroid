@@ -218,7 +218,7 @@ scene("game", () => {
 
     function randPosition(pos){
         let enemy_position = randPos();
-        while (enemy_position.dist(pos)<player_size*2) enemy_position = randPos();
+        while (enemy_position.dist(pos)<player_size*5) enemy_position = randPos();
         return enemy_position;
     }
 
