@@ -118,11 +118,13 @@ scene("game", () => {
         }
 
         let slash = add([
+            "slash",
             pos(player.pos.x + 5 * sign, player.pos.y + 5 * sign),
             rect(100, 50),
             origin(orig1),
             color(255, 255, 0),
-            opacity(1)
+            opacity(1),
+            area()
         ])
         slash.onUpdate(() => {
             slash.pos = player.pos
@@ -138,7 +140,8 @@ scene("game", () => {
                     rect(100, 50),
                     origin(orig2),
                     color(255, 255, 0),
-                    opacity(1)
+                    opacity(1),
+                    area()
                 ])
                 slashRight.onUpdate(() => {
                     slashRight.pos = player.pos
@@ -225,18 +228,30 @@ scene("game", () => {
         let position=randPosition(vec2(player.pos.x,player.pos.y))
 
         let enemy = add([
-            health(100),
+            "enemy",
+            health(20),
             pos(position),
             circle(enemy_size),
             color(0, green, 0),
             origin("center"),
-            area(),
+            area({shape:"circle",height:enemy_size*2,width:enemy_size*2}),
             outline(outline_thickness),
             //move(player.pos.angle(position),40),
         ])
         onUpdate(()=>{
             let vector=vec2(player.pos.x-enemy.pos.x, player.pos.y-enemy.pos.y)
             enemy.moveBy(vec2(vector.x/vector.len(), vector.y/vector.len()).scale(dt()*enemy_speed))
+        })
+        enemy.on("death",()=>{
+            destroy(enemy)
+        })
+
+        enemy.onCollide("slash", () =>{
+            enemy.hurt(10)
+        })
+
+        enemy.onCollide("shield", ()=>{
+            enemy.hurt(5)
         })
     })
 
@@ -246,11 +261,12 @@ scene("game", () => {
 
     function makeShield(position){
         let shield = add([
+            "shield",
             pos(position),
             circle(player_size*0.75),
             color(255,255,0),
+            area({shape:"circle",width:player_size*1.5,height:player_size*1.5}),
             origin("center"),
-            area(),
             outline(outline_thickness),
            // follow(player, vec2(1,1))
         ])
