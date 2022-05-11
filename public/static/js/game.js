@@ -295,18 +295,13 @@ scene("game", () => {
         })
         shield.onUpdate(()=>{
            let vector=vec2(player.pos.x-shield.pos.x, player.pos.y-shield.pos.y)
+           if (vector.len()>3*player_size) shield.moveBy(vec2(vector.x/vector.len(), vector.y/vector.len()).scale(dt()*enemy_speed))
             shield.moveBy(vec2(vector.x/vector.len(), vector.y/vector.len()).normal().scale(shield_speed).scale(dt()))
         })
     }
-    makeShield(vec2(player.pos.x+player_size, player.pos.y+player_size))
-    makeShield(vec2(player.pos.x-player_size, player.pos.y-player_size))
+    makeShield(vec2(player.pos.x+2*player_size, player.pos.y+2*player_size))
+    makeShield(vec2(player.pos.x-2*player_size, player.pos.y-2*player_size))
 
 })
-
-
-
-
-
-
 
 go("game")
