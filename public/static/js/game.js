@@ -13,6 +13,12 @@ kaboom({
 })
 
 // *************
+// LOAD ASSETS
+// *************
+
+
+
+// *************
 // GAME SETUP
 // *************
 
@@ -70,6 +76,21 @@ function fadeOut(speed = 1){
 }
 
 scene("game", () => {
+
+    layers(['obj', 'ui'], 'obj')
+    
+    let points = 0
+    let txt_points = add([
+        text("Enemies defeated: 0", {size: 30}),
+        pos(20, 20),
+        layer('ui'),
+    ])
+
+    txt_points.onUpdate(() => {
+        let x = player.pos.x
+        let y = player.pos.y
+        txt_points.pos = [x - width() / 2 + 20, y - height() / 2 + 20]
+    })
 
     let player = add([
         //pos(width() / 2, height() / 2),
@@ -243,7 +264,10 @@ scene("game", () => {
             enemy.moveBy(vec2(vector.x/vector.len(), vector.y/vector.len()).scale(dt()*enemy_speed))
         })
         enemy.on("death",()=>{
+            shake(5)
             destroy(enemy)
+            points++;
+            txt_points.text = "Enemies defeated: " + points;
         })
 
         enemy.onCollide("slash", () =>{
