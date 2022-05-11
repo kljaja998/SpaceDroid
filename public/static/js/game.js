@@ -80,7 +80,7 @@ function fadeOut(speed = 1){
 scene("game", () => {
 
     layers(['obj', 'ui'], 'obj')
-    
+
     let points = 0
     let txt_points = add([
         text("Enemies defeated: 0", {size: 30}),
@@ -96,17 +96,24 @@ scene("game", () => {
 
     let player = add([
         //pos(width() / 2, height() / 2),
+        "player",
+        health(50),
         pos(grid_size*wall_size/2, grid_size*wall_size/2),
         circle(player_size/*, player_size*/),
         color(3, 165, 252),
         origin("center"),
-        area(),
+        area({shape:"circle",height:player_size*2,width:player_size*2}),
         outline(outline_thickness)
     ])
 
     player.onUpdate(() => {
         camPos(player.pos)
 
+    })
+
+    player.on("death",()=>{
+        // ----------------------neki zvucni efekat
+        go("lose",points)
     })
 
     addLevel(
@@ -230,8 +237,7 @@ scene("game", () => {
             }
         }
     })
-
-    //////////////////////// Enemy
+    //------------------------------- Enemy -----------------------------------------
 
     let enemy_speed=50;
 
@@ -268,22 +274,28 @@ scene("game", () => {
         enemy.on("death",()=>{
             shake(5)
             play("boom", {volume: 0.5})
-            destroy(enemy)
+            destroy(enemy),
             points++;
             txt_points.text = "Enemies defeated: " + points;
         })
 
         enemy.onCollide("slash", () =>{
             enemy.hurt(10)
+
         })
 
         enemy.onCollide("shield", ()=>{
             enemy.hurt(5)
             play("hit", {volume: 0.5})
         })
+
+        enemy.onCollide("player", ()=>{
+            player.hurt(10)
+            console.log(444)
+        })
     })
 
-    //// Shield u pokusaju
+    //-------------------------- Shield ------------------------------------
 
     let shield_speed=150;
 
@@ -296,7 +308,7 @@ scene("game", () => {
             area({shape:"circle",width:player_size*1.5,height:player_size*1.5}),
             origin("center"),
             outline(outline_thickness),
-           // follow(player, vec2(1,1))
+            // follow(player, vec2(1,1))
         ])
         onKeyDown("w", () => {
             // Drze se dva dugmica - gore ide sqrt(2)/2 puta distance
@@ -338,8 +350,8 @@ scene("game", () => {
             }
         })
         shield.onUpdate(()=>{
-           let vector=vec2(player.pos.x-shield.pos.x, player.pos.y-shield.pos.y)
-           if (vector.len()>3*player_size) shield.moveBy(vec2(vector.x/vector.len(), vector.y/vector.len()).scale(dt()*enemy_speed))
+            let vector=vec2(player.pos.x-shield.pos.x, player.pos.y-shield.pos.y)
+            if (vector.len()>3*player_size) shield.moveBy(vec2(vector.x/vector.len(), vector.y/vector.len()).scale(dt()*enemy_speed))
             shield.moveBy(vec2(vector.x/vector.len(), vector.y/vector.len()).normal().scale(shield_speed).scale(dt()))
         })
     }
@@ -347,5 +359,28 @@ scene("game", () => {
     makeShield(vec2(player.pos.x-2*player_size, player.pos.y-2*player_size))
 
 })
+
+//------------------------ Game Over ----------------------------
+
+scene("lose", (points) => {
+
+    // display score
+    add([
+        text("Game Over"),
+        pos(width() / 2, height() / 2 - 80),
+        scale(2),
+        origin("center"),
+    ]);
+    add([
+        text("score: " + points),
+        pos(width() / 2, height() / 2 + 80),
+        origin("center"),
+    ]);
+
+    // go back to game with space is pressed
+    onKeyPress("space", () => go("game"));
+    onClick(() => go("game"));
+
+});
 
 go("game")
