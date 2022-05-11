@@ -16,7 +16,9 @@ kaboom({
 // LOAD ASSETS
 // *************
 
-
+loadSound("hit", "/sounds/hitHurt.wav")
+loadSound("boom", "/sounds/explosion.wav")
+loadSound("music", "/sounds/music.mp3")
 
 // *************
 // GAME SETUP
@@ -182,7 +184,7 @@ scene("game", () => {
     })
 
     onLoad(() => {
-
+        play("music", {volume: 0.8, loop: true})
     })
 
     /*onKeyPress("space", () => {
@@ -265,6 +267,7 @@ scene("game", () => {
         })
         enemy.on("death",()=>{
             shake(5)
+            play("boom", {volume: 0.5})
             destroy(enemy)
             points++;
             txt_points.text = "Enemies defeated: " + points;
@@ -276,6 +279,7 @@ scene("game", () => {
 
         enemy.onCollide("shield", ()=>{
             enemy.hurt(5)
+            play("hit", {volume: 0.5})
         })
     })
 
