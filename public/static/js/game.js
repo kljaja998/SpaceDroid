@@ -82,9 +82,17 @@ scene("game", () => {
     layers(['obj', 'ui'], 'obj')
 
     let points = 0
+    let num_of_lives = 5
+
     let txt_points = add([
         text("Enemies defeated: 0", {size: 30}),
         pos(20, 20),
+        layer('ui'),
+    ])
+
+    let txt_lives = add([
+        text("Lives left: "+num_of_lives, {size: 30}),
+        pos(500, 20),
         layer('ui'),
     ])
 
@@ -92,6 +100,7 @@ scene("game", () => {
         let x = player.pos.x
         let y = player.pos.y
         txt_points.pos = [x - width() / 2 + 20, y - height() / 2 + 20]
+        txt_lives.pos = [x - width() / 2 + 500, y - height() / 2 + 20]
     })
 
     let player = add([
@@ -317,6 +326,8 @@ scene("game", () => {
 
         enemy.onCollide("player", ()=>{
             player.hurt(10)
+            enemy.hurt(20)
+            txt_lives.text = "Lives left: " + --num_of_lives;
             console.log(444)
         })
     })
