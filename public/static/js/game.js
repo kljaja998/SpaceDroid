@@ -283,7 +283,7 @@ scene("game", () => {
         enemy.on("death",()=>{
             shake(5)
             play("boom", {volume: 0.5})
-            destroy(enemy),
+            destroy(enemy)
             points++;
             txt_points.text = "Enemies defeated: " + points;
             // Spawn effect
