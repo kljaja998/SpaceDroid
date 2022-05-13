@@ -32,6 +32,9 @@ let isGoingLeft = true;
 let soundOn = true;
 let soundVolume = 0.5
 let musicVolume = 0.8
+let bestHighScore = -1
+let help_duration = 5;
+let help_time_gap_div2 = 2;
 
 function initialize_walls(){
     let walls = [];
@@ -71,7 +74,7 @@ function addButton(btn_txt, btn_pos, btn_tag = "button", btn_fun){
             }
         }
         else{
-            btn.color = rgb(),
+            btn.color = rgb()
             btn.scale = vec2(1)
         }
     })
@@ -141,31 +144,79 @@ scene("main_game", () => {
             ],
         }
     )
-
+    let o=0;
     loop(2, () => {
+
+        o=(o+1)%help_time_gap_div2;
+        if (o===0){
+            makeHelp()
+        }
+
+        let sign;
+        let slash_time = 1
+        let offset = 70
+
+        if(isGoingLeft){
+            sign = -1;
+        }
+        else{
+            sign = 1;
+        }
+
+        let slash = add([
+            "slash",
+            pos(player.pos.x + offset * sign, player.pos.y),
+            rect(100, 50),
+            origin("center"),
+            color(255, 255, 0),
+            opacity(1),
+            follow(player, vec2(offset * sign, 0) ),
+            lifespan(slash_time, {fade: slash_time}),
+            area()
+        ])
+
+        slash.onDestroy(() =>{
+            let slashRight = add([
+                "rightslash",
+                pos(player.pos.x - offset * sign, player.pos.y),
+                rect(100, 50),
+                origin("center"),
+                color(255, 255, 0),
+                opacity(1),
+                follow(player, vec2(-offset * sign, 0) ),
+                lifespan(slash_time, {fade: slash_time,}),
+                area()
+            ])
+        })
+    })
+/*
+    loop(1, () => {
         let sign;
         let orig1;
         let orig2;
 
         if (isGoingLeft) {
             sign = -1;
-            orig1 = "topleft";
-            orig2 = "botright";
+            orig1 = "center";
+            orig2 = "center";
         } else {
             sign = 1;
-            orig1 = "topright"
-            orig2 = "botleft"
+            orig1 = "center"
+            orig2 = "center"
         }
 
         let slash = add([
             "slash",
-            pos(player.pos.x + 5 * sign, player.pos.y + 5 * sign),
+            pos(player.pos.x + 25 * sign, player.pos.y),
             rect(100, 50),
             origin(orig1),
             color(255, 255, 0),
             opacity(1),
+            lifespan(1, {fade: 1}),
             area()
         ])
+
+        wait(1)
 
         slash.onUpdate(() => {
             slash.pos = player.pos
@@ -180,7 +231,7 @@ scene("main_game", () => {
                 destroy(slash)
 
                 let slashRight = add([
-                    pos(player.pos.x - 5 * sign, player.pos.y - 5 * sign),
+                    pos(player.pos.x - 25 * sign, player.pos.y),
                     rect(100, 50),
                     origin(orig2),
                     color(255, 255, 0),
@@ -202,7 +253,7 @@ scene("main_game", () => {
             }
         })
     })
-
+*/
     onUpdate(() => {
 
     })
@@ -210,6 +261,21 @@ scene("main_game", () => {
     onLoad(() => {
         play("music", {volume: musicVolume, loop: true})
     })
+
+    function generateParticles(enemy){
+        for(let i = 0; i < rand(2, 5); i++){
+            add([
+                pos(enemy.pos),
+                origin("center"),
+                scale(rand(0.25, 1)),
+                rect(10, 10),
+                rotate(rand(0, 180)),
+                lifespan(2, {fade: 1}),
+                area(),
+                move(new Vec2(rand(-1, 1), rand(-1, 1)), 60),
+            ])
+        }
+    }
 
     /*onKeyPress("space", () => {
         fadeOut(1);
@@ -257,25 +323,26 @@ scene("main_game", () => {
     //------------------------------- Enemy -----------------------------------------
 
     let enemy_speed=50;
+    const enemy_hp=20;
 
     function randPos(){
         return (vec2(rand(wall_size+player_size,(grid_size-1) * wall_size-player_size), rand(wall_size+player_size,(grid_size-1) * wall_size-player_size)));
     }
 
-    function randPosition(pos){
+    function randPosition(){
         let enemy_position = randPos();
-        while (enemy_position.dist(pos)<player_size*5) enemy_position = randPos();
+        while (enemy_position.dist(vec2(player.pos.x,player.pos.y))<player_size*5) enemy_position = randPos();
         return enemy_position;
     }
 
     loop(2, () => {
         let green=rand(90, 250);
         let enemy_size=player_size+rand(player_size/2,player_size)
-        let position=randPosition(vec2(player.pos.x,player.pos.y))
+        let position=randPosition()
 
         let enemy = add([
             "enemy",
-            health(20),
+            health(enemy_hp),
             pos(position),
             circle(enemy_size),
             color(0, green, 0),
@@ -291,7 +358,7 @@ scene("main_game", () => {
         enemy.on("death",()=>{
             shake(5)
             play("boom", {volume: soundVolume})
-            destroy(enemy),
+            destroy(enemy)
             points++;
             txt_points.text = "Enemies defeated: " + points;
             // Spawn effect
@@ -310,25 +377,24 @@ scene("main_game", () => {
             }
         })
 
+        enemy.onCollide("shieldTemp",()=>{
+            enemy.hurt(Math.round(100 / max_lives))
+        })
+
         enemy.onCollide("slash", () =>{
             enemy.hurt(10)
+            generateParticles(enemy)
+        })
+
+        enemy.onCollide("rightslash", () => {
+            enemy.hurt(10)
+            generateParticles(enemy)
         })
 
         enemy.onCollide("shield", ()=>{
             enemy.hurt(5)
             play("hit", {volume: soundVolume})
-            for(let i = 0; i < rand(2, 5); i++){
-                add([
-                    pos(enemy.pos),
-                    origin("center"),
-                    scale(rand(0.25, 1)),
-                    rect(10, 10),
-                    rotate(rand(0, 180)),
-                    lifespan(2, {fade: 1}),
-                    area(),
-                    move(new Vec2(rand(-1, 1), rand(-1, 1)), 60),
-                ])
-            }
+            generateParticles(enemy)
         })
 
         enemy.onCollide("player", ()=>{
@@ -401,6 +467,43 @@ scene("main_game", () => {
     makeShield(vec2(player.pos.x+2*player_size, player.pos.y+2*player_size))
     makeShield(vec2(player.pos.x-2*player_size, player.pos.y-2*player_size))
 
+    //------------------------ ShieldTemp -----------------------------
+    function makeTempShield(){
+        let shield_size=player_size*4
+        let shield = add([
+            "shieldTemp",
+            pos(player.pos),
+            circle(shield_size),
+            color(255,255,255),
+            opacity(0.8),
+            area({shape:"circle",width:shield_size,height:shield_size}),
+            origin("center"),
+            outline(outline_thickness),
+            follow(player, vec2(0,0)),
+            lifespan(3, { fade: 0.2 })
+        ])
+    }
+
+    //---------------------- Help ------------------------------------
+    function makeHelp(){
+        let help_size=player_size*2
+        let help = add([
+            "help",
+            pos(randPosition()),
+            circle(help_size),
+            color(255,165,0),
+            area({shape:"circle",width:help_size,height:help_size}),
+            origin("center"),
+            outline(outline_thickness),
+            lifespan(help_duration, { fade: 0.2 })
+        ])
+
+        help.onCollide("player", ()=>{
+            makeTempShield()
+            destroy(help)
+        })
+    }
+
 })
 
 //------------------------ Main menu -----------------------------
@@ -441,6 +544,11 @@ scene ("main_menu", () => {
 
 scene("lose", (points) => {
 
+    /*
+    if(points > bestHighScore){
+        bestHighScore = points;
+    }*/
+
     // display score
     add([
         text("Game Over"),
@@ -448,6 +556,14 @@ scene("lose", (points) => {
         scale(1.5),
         origin("center"),
     ]);
+
+    /*
+    add([
+        text("Best score: " + points, {size: 18}),
+        pos(width() / 2, height() / 2 + 40),
+        origin("center"),
+    ]);*/
+
     add([
         text("score: " + points),
         pos(width() / 2, height() / 2 + 80),
