@@ -1,12 +1,9 @@
-//import kaboom from "kaboom"
-//const kaboom = require("kaboom")
 
 kaboom({
     global: true,
     //fullscreen: true,
     scale: 1,
     debug: true,
-    //clearColor: [0, 0, 0, 1],
     background: [0, 0, 0, 1],
     width: 800,
     height: 800,
@@ -18,6 +15,7 @@ kaboom({
 
 loadSound("hit", "/sounds/hitHurt.wav")
 loadSound("boom", "/sounds/explosion.wav")
+loadSound("slash", "/sounds/slash.wav")
 loadSound("music", "/sounds/music.mp3")
 
 // *************
@@ -28,8 +26,12 @@ let grid_size = 30;
 let distance = 5;
 let player_size = 15;
 let wall_size = 40;
+let max_lives = 5
 let outline_thickness = 3;
 let isGoingLeft = true;
+let soundOn = true;
+let soundVolume = 0.5
+let musicVolume = 0.8
 
 function initialize_walls(){
     let walls = [];
@@ -41,50 +43,58 @@ function initialize_walls(){
     return walls
 }
 
-/*
+function addButton(btn_txt, btn_pos, btn_tag = "button", btn_fun){
+    const btn = add([
+        btn_tag,
+        text(btn_txt),
+        pos(btn_pos),
+        area({cursor: "pointer",}),
+        scale(1),
+        origin("center"),
+    ])
 
-function fadeIn(speed = 1) {
-    let opacity = 0;
-    return {
-        // runs when object is added to the scene
-        add() {
-            this.color.a = opacity; // make sure the game object using this component has `color()` component
-        },
-        // runs every frame when object is still in the scene
-        update() {
-            if (opacity < 1) {
-                opacity += dt() * speed;
-                this.color.a = opacity;
-            }
-        },
-    };
-}
+    btn.onClick(btn_fun)
 
- */
-
-function fadeOut(speed = 1){
-    let opacity = 1;
-    return{
-        add(){
-            this.color.a = opacity;
-        },
-        update(){
-            if(opacity > 0){
-                opacity -= dt() * speed;
-                this.color.a = opacity;
+    btn.onUpdate(() => {
+        if(btn.isHovering()){
+            if (btn.isHovering()) {
+                const t = time() * 10
+                btn.color = rgb(
+                    wave(0, 255, t),
+                    wave(0, 255, t + 2),
+                    wave(0, 255, t + 4),
+                )
+                btn.scale = vec2(1.2)
+            } else {
+                btn.scale = vec2(1)
+                btn.color = rgb()
             }
         }
-    }
+        else{
+            btn.color = rgb(),
+            btn.scale = vec2(1)
+        }
+    })
 }
 
-scene("game", () => {
+//------------------------ Main game -----------------------------
+
+scene("main_game", () => {
 
     layers(['obj', 'ui'], 'obj')
 
     let points = 0
+    let num_of_lives = max_lives
+
     let txt_points = add([
         text("Enemies defeated: 0", {size: 30}),
         pos(20, 20),
+        layer('ui'),
+    ])
+    
+    let txt_lives = add([
+        text("Lives left: "+num_of_lives, {size: 30}),
+        pos(500, 20),
         layer('ui'),
     ])
 
@@ -92,6 +102,7 @@ scene("game", () => {
         let x = player.pos.x
         let y = player.pos.y
         txt_points.pos = [x - width() / 2 + 20, y - height() / 2 + 20]
+        txt_lives.pos = [x - width() / 2 + 500, y - height() / 2 + 20]
     })
 
     let player = add([
@@ -156,8 +167,12 @@ scene("game", () => {
             opacity(1),
             area()
         ])
+
         slash.onUpdate(() => {
             slash.pos = player.pos
+            if(slash.opacity == 1){
+                play("slash", {volume: soundVolume})
+            }
             if (slash.opacity > 0) {
                 //console.log("Hiii")
                 slash.opacity -= 0.035
@@ -174,6 +189,9 @@ scene("game", () => {
                     area()
                 ])
                 slashRight.onUpdate(() => {
+                    if(slashRight.opacity == 1){
+                        play("slash", {volume: soundVolume})
+                    }
                     slashRight.pos = player.pos
                     if (slashRight.opacity > 0) {
                         //console.log("Hiii")
@@ -191,7 +209,7 @@ scene("game", () => {
     })
 
     onLoad(() => {
-        play("music", {volume: 0.8, loop: true})
+        play("music", {volume: musicVolume, loop: true})
     })
 
     /*onKeyPress("space", () => {
@@ -273,7 +291,7 @@ scene("game", () => {
         })
         enemy.on("death",()=>{
             shake(5)
-            play("boom", {volume: 0.5})
+            play("boom", {volume: soundVolume})
             destroy(enemy),
             points++;
             txt_points.text = "Enemies defeated: " + points;
@@ -295,12 +313,11 @@ scene("game", () => {
 
         enemy.onCollide("slash", () =>{
             enemy.hurt(10)
-
         })
 
         enemy.onCollide("shield", ()=>{
             enemy.hurt(5)
-            play("hit", {volume: 0.5})
+            play("hit", {volume: soundVolume})
             for(let i = 0; i < rand(2, 5); i++){
                 add([
                     pos(enemy.pos),
@@ -317,7 +334,8 @@ scene("game", () => {
 
         enemy.onCollide("player", ()=>{
             player.hurt(10)
-            console.log(444)
+            enemy.hurt(Math.round(100 / max_lives))
+            txt_lives.text = "Lives left: " + --num_of_lives;
         })
     })
 
@@ -386,6 +404,40 @@ scene("game", () => {
 
 })
 
+//------------------------ Main menu -----------------------------
+
+scene ("main_menu", () => {
+
+    /*add([
+        text("🎯🎯🎯"),
+        pos(width() / 2, height() / 2),
+        color(255, 0, 0),
+    ])*/
+
+    addButton("Start", vec2(width() / 2, height() / 2 - 50), "button" ,() => {
+        go("main_game")
+    })
+    addButton("Sound: ON", vec2(width() / 2, height() / 2 + 50), "tag_sound", () =>{
+        const allButtons = get("tag_sound")
+        let button = allButtons[0]
+        if(soundOn){
+            button.text = "Sound: OFF"
+        }
+        else{
+            button.text = "Sound: ON"
+        }
+        soundOn = !soundOn       
+        if(soundOn){
+            musicVolume = 0.8
+            soundVolume = 0.5
+        } 
+        else{
+            musicVolume = 0
+            soundVolume = 0
+        }
+    })
+})
+
 //------------------------ Game Over ----------------------------
 
 scene("lose", (points) => {
@@ -394,7 +446,7 @@ scene("lose", (points) => {
     add([
         text("Game Over"),
         pos(width() / 2, height() / 2 - 80),
-        scale(2),
+        scale(1.5),
         origin("center"),
     ]);
     add([
@@ -403,10 +455,22 @@ scene("lose", (points) => {
         origin("center"),
     ]);
 
+    add([
+        text("Press the space bar to try again.", {
+            size: 25,
+        }),
+        pos(width() / 2, height() / 2 + 160),
+        origin("center"),
+    ]);
+
     // go back to game with space is pressed
-    onKeyPress("space", () => go("game"));
-    onClick(() => go("game"));
+    onKeyPress("space", () => go("main_game"));
+    onClick(() => go("main_game"));
+
+    /*addButton("Main menu", pos(width() / 2, height() / 2 + 90), "button", () => {
+        go("main_menu")
+    })*/
 
 });
 
-go("game")
+go("main_menu")
