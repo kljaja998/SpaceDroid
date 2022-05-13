@@ -97,7 +97,6 @@ scene("main_game", () => {
         pos(500, 20),
         layer('ui'),
     ])
-
     txt_points.onUpdate(() => {
         let x = player.pos.x
         let y = player.pos.y
