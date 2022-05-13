@@ -144,7 +144,7 @@ scene("main_game", () => {
             ],
         }
     )
-
+    let o=0;
     loop(2, () => {
 
         o=(o+1)%help_time_gap_div2;
@@ -329,16 +329,16 @@ scene("main_game", () => {
         return (vec2(rand(wall_size+player_size,(grid_size-1) * wall_size-player_size), rand(wall_size+player_size,(grid_size-1) * wall_size-player_size)));
     }
 
-    function randPosition(pos){
+    function randPosition(){
         let enemy_position = randPos();
-        while (enemy_position.dist(pos)<player_size*5) enemy_position = randPos();
+        while (enemy_position.dist(vec2(player.pos.x,player.pos.y))<player_size*5) enemy_position = randPos();
         return enemy_position;
     }
 
     loop(2, () => {
         let green=rand(90, 250);
         let enemy_size=player_size+rand(player_size/2,player_size)
-        let position=randPosition(vec2(player.pos.x,player.pos.y))
+        let position=randPosition()
 
         let enemy = add([
             "enemy",
@@ -375,6 +375,10 @@ scene("main_game", () => {
                     move(new Vec2(rand(-1, 1), rand(-1, 1)), 30),
                 ])
             }
+        })
+
+        enemy.onCollide("shieldTemp",()=>{
+            enemy.hurt(Math.round(100 / max_lives))
         })
 
         enemy.onCollide("slash", () =>{
@@ -462,6 +466,43 @@ scene("main_game", () => {
     }
     makeShield(vec2(player.pos.x+2*player_size, player.pos.y+2*player_size))
     makeShield(vec2(player.pos.x-2*player_size, player.pos.y-2*player_size))
+
+    //------------------------ ShieldTemp -----------------------------
+    function makeTempShield(){
+        let shield_size=player_size*4
+        let shield = add([
+            "shieldTemp",
+            pos(player.pos),
+            circle(shield_size),
+            color(255,255,255),
+            opacity(0.8),
+            area({shape:"circle",width:shield_size,height:shield_size}),
+            origin("center"),
+            outline(outline_thickness),
+            follow(player, vec2(0,0)),
+            lifespan(3, { fade: 0.2 })
+        ])
+    }
+
+    //---------------------- Help ------------------------------------
+    function makeHelp(){
+        let help_size=player_size*2
+        let help = add([
+            "help",
+            pos(randPosition()),
+            circle(help_size),
+            color(255,165,0),
+            area({shape:"circle",width:help_size,height:help_size}),
+            origin("center"),
+            outline(outline_thickness),
+            lifespan(help_duration, { fade: 0.2 })
+        ])
+
+        help.onCollide("player", ()=>{
+            makeTempShield()
+            destroy(help)
+        })
+    }
 
 })
 
