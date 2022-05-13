@@ -32,6 +32,9 @@ let isGoingLeft = true;
 let soundOn = true;
 let soundVolume = 0.5
 let musicVolume = 0.8
+let bestHighScore = -1
+let help_duration = 5;
+let help_time_gap_div2 = 2;
 
 function initialize_walls(){
     let walls = [];
@@ -143,29 +146,77 @@ scene("main_game", () => {
     )
 
     loop(2, () => {
+
+        o=(o+1)%help_time_gap_div2;
+        if (o===0){
+            makeHelp()
+        }
+
+        let sign;
+        let slash_time = 1
+        let offset = 70
+
+        if(isGoingLeft){
+            sign = -1;
+        }
+        else{
+            sign = 1;
+        }
+
+        let slash = add([
+            "slash",
+            pos(player.pos.x + offset * sign, player.pos.y),
+            rect(100, 50),
+            origin("center"),
+            color(255, 255, 0),
+            opacity(1),
+            follow(player, vec2(offset * sign, 0) ),
+            lifespan(slash_time, {fade: slash_time}),
+            area()
+        ])
+
+        slash.onDestroy(() =>{
+            let slashRight = add([
+                "rightslash",
+                pos(player.pos.x - offset * sign, player.pos.y),
+                rect(100, 50),
+                origin("center"),
+                color(255, 255, 0),
+                opacity(1),
+                follow(player, vec2(-offset * sign, 0) ),
+                lifespan(slash_time, {fade: slash_time,}),
+                area()
+            ])
+        })
+    })
+/*
+    loop(1, () => {
         let sign;
         let orig1;
         let orig2;
 
         if (isGoingLeft) {
             sign = -1;
-            orig1 = "topleft";
-            orig2 = "botright";
+            orig1 = "center";
+            orig2 = "center";
         } else {
             sign = 1;
-            orig1 = "topright"
-            orig2 = "botleft"
+            orig1 = "center"
+            orig2 = "center"
         }
 
         let slash = add([
             "slash",
-            pos(player.pos.x + 5 * sign, player.pos.y + 5 * sign),
+            pos(player.pos.x + 25 * sign, player.pos.y),
             rect(100, 50),
             origin(orig1),
             color(255, 255, 0),
             opacity(1),
+            lifespan(1, {fade: 1}),
             area()
         ])
+
+        wait(1)
 
         slash.onUpdate(() => {
             slash.pos = player.pos
@@ -180,7 +231,7 @@ scene("main_game", () => {
                 destroy(slash)
 
                 let slashRight = add([
-                    pos(player.pos.x - 5 * sign, player.pos.y - 5 * sign),
+                    pos(player.pos.x - 25 * sign, player.pos.y),
                     rect(100, 50),
                     origin(orig2),
                     color(255, 255, 0),
@@ -202,7 +253,7 @@ scene("main_game", () => {
             }
         })
     })
-
+*/
     onUpdate(() => {
 
     })
@@ -210,6 +261,21 @@ scene("main_game", () => {
     onLoad(() => {
         play("music", {volume: musicVolume, loop: true})
     })
+
+    function generateParticles(enemy){
+        for(let i = 0; i < rand(2, 5); i++){
+            add([
+                pos(enemy.pos),
+                origin("center"),
+                scale(rand(0.25, 1)),
+                rect(10, 10),
+                rotate(rand(0, 180)),
+                lifespan(2, {fade: 1}),
+                area(),
+                move(new Vec2(rand(-1, 1), rand(-1, 1)), 60),
+            ])
+        }
+    }
 
     /*onKeyPress("space", () => {
         fadeOut(1);
@@ -313,23 +379,18 @@ scene("main_game", () => {
 
         enemy.onCollide("slash", () =>{
             enemy.hurt(10)
+            generateParticles(enemy)
+        })
+
+        enemy.onCollide("rightslash", () => {
+            enemy.hurt(10)
+            generateParticles(enemy)
         })
 
         enemy.onCollide("shield", ()=>{
             enemy.hurt(5)
             play("hit", {volume: soundVolume})
-            for(let i = 0; i < rand(2, 5); i++){
-                add([
-                    pos(enemy.pos),
-                    origin("center"),
-                    scale(rand(0.25, 1)),
-                    rect(10, 10),
-                    rotate(rand(0, 180)),
-                    lifespan(2, {fade: 1}),
-                    area(),
-                    move(new Vec2(rand(-1, 1), rand(-1, 1)), 60),
-                ])
-            }
+            generateParticles(enemy)
         })
 
         enemy.onCollide("player", ()=>{
@@ -442,6 +503,11 @@ scene ("main_menu", () => {
 
 scene("lose", (points) => {
 
+    /*
+    if(points > bestHighScore){
+        bestHighScore = points;
+    }*/
+
     // display score
     add([
         text("Game Over"),
@@ -449,6 +515,14 @@ scene("lose", (points) => {
         scale(1.5),
         origin("center"),
     ]);
+
+    /*
+    add([
+        text("Best score: " + points, {size: 18}),
+        pos(width() / 2, height() / 2 + 40),
+        origin("center"),
+    ]);*/
+
     add([
         text("score: " + points),
         pos(width() / 2, height() / 2 + 80),
