@@ -91,7 +91,7 @@ scene("main_game", () => {
         pos(20, 20),
         layer('ui'),
     ])
-    
+
     let txt_lives = add([
         text("Lives left: "+num_of_lives, {size: 30}),
         pos(500, 20),
@@ -425,7 +425,7 @@ scene ("main_menu", () => {
         else{
             button.text = "Sound: ON"
         }
-        soundOn = !soundOn       
+        soundOn = !soundOn
         if(soundOn){
             musicVolume = 0.8
             soundVolume = 0.5
