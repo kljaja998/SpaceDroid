@@ -71,7 +71,7 @@ function addButton(btn_txt, btn_pos, btn_tag = "button", btn_fun){
             }
         }
         else{
-            btn.color = rgb(),
+            btn.color = rgb()
             btn.scale = vec2(1)
         }
     })
@@ -257,6 +257,7 @@ scene("main_game", () => {
     //------------------------------- Enemy -----------------------------------------
 
     let enemy_speed=50;
+    const enemy_hp=20;
 
     function randPos(){
         return (vec2(rand(wall_size+player_size,(grid_size-1) * wall_size-player_size), rand(wall_size+player_size,(grid_size-1) * wall_size-player_size)));
@@ -275,7 +276,7 @@ scene("main_game", () => {
 
         let enemy = add([
             "enemy",
-            health(20),
+            health(enemy_hp),
             pos(position),
             circle(enemy_size),
             color(0, green, 0),
@@ -291,7 +292,7 @@ scene("main_game", () => {
         enemy.on("death",()=>{
             shake(5)
             play("boom", {volume: soundVolume})
-            destroy(enemy),
+            destroy(enemy)
             points++;
             txt_points.text = "Enemies defeated: " + points;
             // Spawn effect
