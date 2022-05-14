@@ -27,6 +27,6 @@ In this web game, you play as a droid restricted in a region of space with only 
    npm run dev
    ```
 5. You can now access the web game using localhost and probably with a port of 8080 (but make sure to check your shell for more information)
-  ```sh
+  ```
   http://localhost:8080
   ```
