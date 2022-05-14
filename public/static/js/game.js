@@ -34,7 +34,9 @@ let soundVolume = 0.5
 let musicVolume = 0.8
 let bestHighScore = -1
 let help_duration = 5;
+let shieldTemp_duration = 3;
 let help_time_gap_div2 = 2;
+let tempShield_help_size=player_size*2
 
 function initialize_walls(){
     let walls = [];
@@ -149,7 +151,7 @@ scene("main_game", () => {
 
         o=(o+1)%help_time_gap_div2;
         if (o===0){
-            makeHelp()
+            makeHelp(tempShield_help_size,makeTempShield)
         }
 
         let sign;
@@ -480,13 +482,13 @@ scene("main_game", () => {
             origin("center"),
             outline(outline_thickness),
             follow(player, vec2(0,0)),
-            lifespan(3, { fade: 0.2 })
+            lifespan(shieldTemp_duration, { fade: 1 })
         ])
     }
 
     //---------------------- Help ------------------------------------
-    function makeHelp(){
-        let help_size=player_size*2
+    function makeHelp(help_size, func){
+
         let help = add([
             "help",
             pos(randPosition()),
@@ -495,11 +497,11 @@ scene("main_game", () => {
             area({shape:"circle",width:help_size,height:help_size}),
             origin("center"),
             outline(outline_thickness),
-            lifespan(help_duration, { fade: 0.2 })
+            lifespan(help_duration, { fade: 3 })
         ])
 
         help.onCollide("player", ()=>{
-            makeTempShield()
+            func()
             destroy(help)
         })
     }
