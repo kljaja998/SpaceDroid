@@ -30,6 +30,7 @@ let max_lives = 5
 let outline_thickness = 3;
 let isGoingLeft = true;
 let soundOn = true;
+let musicPlaying = false;
 let soundVolume = 0.5
 let musicVolume = 0.8
 let bestHighScore = -1
@@ -259,7 +260,10 @@ scene("main_game", () => {
     })
 
     onLoad(() => {
-        play("music", {volume: musicVolume, loop: true})
+        if(!musicPlaying){
+            musicPlaying = true;
+            play("music", {volume: musicVolume, loop: true})
+        }
     })
 
     function generateParticles(enemy){
