@@ -550,10 +550,10 @@ scene ("main_menu", () => {
 
 scene("lose", (points) => {
 
-    /*
+
     if(points > bestHighScore){
         bestHighScore = points;
-    }*/
+    }
 
     // display score
     add([
@@ -563,16 +563,16 @@ scene("lose", (points) => {
         origin("center"),
     ]);
 
-    /*
+
     add([
-        text("Best score: " + points, {size: 18}),
+        text("Best score: " + points ),//, {size: 18}
         pos(width() / 2, height() / 2 + 40),
         origin("center"),
-    ]);*/
+    ]);
 
     add([
         text("score: " + points),
-        pos(width() / 2, height() / 2 + 80),
+        pos(width() / 2, height() / 2 + 100),
         origin("center"),
     ]);
 
