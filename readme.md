@@ -12,7 +12,7 @@ In this web game, you play as a droid restricted in a region of space with only 
 
 1. Clone the existing repository
    ```sh
-   git clone https://github.com/kljaja998/kaboom-test.git [https://github.com/kljaja998/kaboom-test.git]
+   git clone https://github.com/kljaja998/kaboom-test.git
    ```
 2. You will now need the Kaboomjs package 
    ```sh
