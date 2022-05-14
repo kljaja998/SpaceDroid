@@ -147,12 +147,14 @@ scene("main_game", () => {
             ],
         }
     )
+    let sh=0;
     let o=0;
     loop(2, () => {
 
         o=(o+1)%help_time_gap_div2;
         if (o===0){
-            makeHelp(tempShield_help_size,makeTempShield)
+            if (sh==0) makeHelp(player_size, 255,255,0, makeTwoShields)
+            makeHelp(tempShield_help_size, 255,165,0, makeTempShield)
         }
 
         let sign;
@@ -413,10 +415,11 @@ scene("main_game", () => {
     //-------------------------- Shield ------------------------------------
 
     let shield_speed=150;
-
     function makeShield(position){
+        sh++;
         let shield = add([
             "shield",
+            health(5),
             pos(position),
             circle(player_size*0.75),
             color(255,255,0),
@@ -464,14 +467,23 @@ scene("main_game", () => {
                 }
             }
         })
+
+        shield.onCollide("enemy", ()=>{
+            shield.destroy()
+            sh--;
+        })
+
         shield.onUpdate(()=>{
             let vector=vec2(player.pos.x-shield.pos.x, player.pos.y-shield.pos.y)
             if (vector.len()>3*player_size) shield.moveBy(vec2(vector.x/vector.len(), vector.y/vector.len()).scale(dt()*enemy_speed))
             shield.moveBy(vec2(vector.x/vector.len(), vector.y/vector.len()).normal().scale(shield_speed).scale(dt()))
         })
     }
-    makeShield(vec2(player.pos.x+2*player_size, player.pos.y+2*player_size))
-    makeShield(vec2(player.pos.x-2*player_size, player.pos.y-2*player_size))
+    function makeTwoShields(){
+        makeShield(vec2(player.pos.x+2*player_size, player.pos.y+2*player_size))
+        makeShield(vec2(player.pos.x-2*player_size, player.pos.y-2*player_size))
+    }
+
 
     //------------------------ ShieldTemp -----------------------------
     function makeTempShield(){
@@ -491,13 +503,13 @@ scene("main_game", () => {
     }
 
     //---------------------- Help ------------------------------------
-    function makeHelp(help_size, func){
+    function makeHelp(help_size, r, g, b, func){
 
         let help = add([
             "help",
             pos(randPosition()),
             circle(help_size),
-            color(255,165,0),
+            color(r, g, b),
             area({shape:"circle",width:help_size,height:help_size}),
             origin("center"),
             outline(outline_thickness),
